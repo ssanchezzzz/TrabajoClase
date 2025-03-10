@@ -1,0 +1,5 @@
+.tachar {
+    text-decoration: line-through;
+    color: red;    
+    width: 30%;
+}
