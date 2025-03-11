@@ -16,26 +16,35 @@ Características para desarrollar:
 
 
 //Ejemplo de creación de Gráfico
-const ctx = document.getElementById('grafico'); //Nos resferimos al elemento
+let labelsIniciales = ['2025-03-02T00:00', '2025-03-02T01:00', '2025-03-02T02:00', '2025-03-02T03:00', '2025-03-02T04:00'];
+let dataIncial = [20.3, 20.5, 20.3, 20.1, 19.9, 19.7];
 
-new Chart(ctx, { //Instanciamos 
-    type: 'line',
-    data: {
-        labels: ['2025-03-02T00:00', '2025-03-02T01:00', '2025-03-02T02:00', '2025-03-02T03:00', '2025-03-02T04:00'],
-        datasets: [{
-            label: 'Temperatura',
-            data: [20.3, 20.5, 20.3, 20.1, 19.9, 19.7],
-            borderWidth: 1
-        }]
-    },
-    options: {
-        scales: {
-            y: {
-                beginAtZero: true
+let miGrafico; //Instanciamos 
+
+function crearGrafico() {
+    const ctx = document.getElementById('grafico'); //Nos resferimos al elemento
+
+    miGrafico = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labelsIniciales,
+            datasets: [{
+                label: 'Temperatura',
+                data: dataIncial,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
             }
         }
-    }
   });
+  
+  
+}
 
 async function obtenerDatos() {
     try {
@@ -47,18 +56,19 @@ async function obtenerDatos() {
 
         if (respuesta.ok) {
             let datos = await respuesta.json();
-            
+
+            labelsIniciales = datos.hourly.time;
+            dataIncial = datos.hourly.temperature_2m;
+
             document.getElementById("v_lat").innerText = datos.latitude;
             document.getElementById("v_long").innerText = datos.longitude;
             document.getElementById("v_alt").innerText = datos.elevation;
             document.getElementById("v_zone").innerText = datos.timezone;
             document.getElementById("v_temp").innerText = datos.current.temperature_2m;
+            document.getElementById("v_hour").innerText = datos.current.time;
 
-            //Funciones - Pendiente
 
-            // document.getElementById("v_hour").innerText = "pendiente "
-            
-            // addData (Grafica, datos.hourly.time, datos.hourly.temperature_2m.slice(0,5))
+            actualizarGrafico();
         }
 
     } catch (error) {
@@ -67,27 +77,13 @@ async function obtenerDatos() {
     
 }
 
-// function actualizarDato(label, newData) { 
-//     if (Grafica) {
-//         Grafica.destroy(); // Borra el gráfico anterior
-//     }
-//     myChart = new Chart(ctx, {
-//         type: 'line',
-//         data: {
-//             labels: label,
-//             datasets: [{
-//                 label: 'Temperatura',
-//                 data: newData,
-//                 borderColor: 'blue',
-//                 backgroundColor: 'rgba(0, 0, 255, 0.2)',
-//                 borderWidth: 2
-//             }]
-//         },
-//         options: {
-//             scales: {
-//                 y: { beginAtZero: false }
-//             }
-//         }
-//     });
-// }
+function actualizarGrafico() { //Documentacion de Chart
+    if (miGrafico) {
+        miGrafico.data.labels = labelsIniciales;
+        miGrafico.data.datasets[0].data = dataIncial;
+        miGrafico.update();
+    }
+}
+
+crearGrafico(); 
 document.getElementById("buscar_datos").addEventListener("click", obtenerDatos);
